@@ -2,10 +2,10 @@ package ws
 
 import (
 	"fmt"
+	. "github.com/bulenttokuzlu/v5sdk_go/ws/wImpl"
 	"log"
 	"testing"
 	"time"
-	. "v5sdk_go/ws/wImpl"
 
 	"github.com/stretchr/testify/assert"
 )

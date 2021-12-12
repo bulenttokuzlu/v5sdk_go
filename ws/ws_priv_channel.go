@@ -1,7 +1,7 @@
 package ws
 
 import (
-	. "v5sdk_go/ws/wImpl"
+	. "github.com/bulenttokuzlu/v5sdk_go/ws/wImpl"
 )
 
 /*

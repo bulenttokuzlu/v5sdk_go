@@ -2,7 +2,7 @@ package ws
 
 import (
 	"errors"
-	. "v5sdk_go/ws/wImpl"
+	. "github.com/bulenttokuzlu/v5sdk_go/ws/wImpl"
 )
 
 /*

@@ -2,9 +2,9 @@ package ws
 
 import (
 	"context"
+	. "github.com/bulenttokuzlu/v5sdk_go/ws/wImpl"
 	"log"
 	"time"
-	. "v5sdk_go/ws/wImpl"
 )
 
 /*

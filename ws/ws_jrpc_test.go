@@ -2,9 +2,9 @@ package ws
 
 import (
 	"fmt"
+	. "github.com/bulenttokuzlu/v5sdk_go/ws/wImpl"
 	"testing"
 	"time"
-	. "v5sdk_go/ws/wImpl"
 )
 
 func PrintDetail(d *ProcessDetail) {
