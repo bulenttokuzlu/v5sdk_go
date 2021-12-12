@@ -10,7 +10,7 @@ import (
 	"net/http"
 	"strings"
 	"time"
-	. "v5sdk_go/utils"
+	. "github.com/bulenttokuzlu/v5sdk_go/utils"
 )
 
 type RESTAPI struct {
