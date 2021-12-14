@@ -1,18 +1,18 @@
-# 简介
-OKEX go版本的v5sdk，仅供学习交流使用。
-(文档持续完善中)
-# 项目说明
+# Introduction
+The v5sdk of OKEX go version is only for learning and communication.
+(The documentation continues to be improved)
+# project instruction
 
-## REST调用
+## REST call
 ``` go
-    // 设置您的APIKey
+    // Set your APIKey
 	apikey := APIKeyInfo{
 		ApiKey:     "xxxx",
 		SecKey:     "xxxx",
 		PassPhrase: "xxxx",
 	}
 
-	// 第三个参数代表是否为模拟环境，更多信息查看接口说明
+	// The third parameter represents whether it is a simulated environment, see the interface description for more information
 	cli := NewRESTClient("https://www.okex.win", &apikey, true)
 	rsp, err := cli.Get(context.Background(), "/api/v5/account/balance", nil)
 	if err != nil {
@@ -21,34 +21,34 @@ OKEX go版本的v5sdk，仅供学习交流使用。
 
 	fmt.Println("Response:")
 	fmt.Println("\thttp code: ", rsp.Code)
-	fmt.Println("\t总耗时: ", rsp.TotalUsedTime)
-	fmt.Println("\t请求耗时: ", rsp.ReqUsedTime)
-	fmt.Println("\t返回消息: ", rsp.Body)
+	fmt.Println("\t total time: ", rsp.TotalUsedTime)
+	fmt.Println("\t request time consuming: ", rsp.ReqUsedTime)
+	fmt.Println("\t return message: ", rsp.Body)
 	fmt.Println("\terrCode: ", rsp.V5Response.Code)
 	fmt.Println("\terrMsg: ", rsp.V5Response.Msg)
 	fmt.Println("\tdata: ", rsp.V5Response.Data)
  ```
-更多示例请查看rest/rest_test.go  
+See more examples rest/rest_test.go  
 
-## websocket订阅
+## websocket subscription
 
-### 私有频道
+### Private channel
 ```go
     ep := "wss://ws.okex.com:8443/ws/v5/private?brokerId=9999"
 
-	// 填写您自己的APIKey信息
+	// Fill in your own APIKey information
 	apikey := "xxxx"
 	secretKey := "xxxxx"
 	passphrase := "xxxxx"
 
-	// 创建ws客户端
+	// Create ws client
 	r, err := NewWsClient(ep)
 	if err != nil {
 		log.Println(err)
 		return
 	}
 
-	// 设置连接超时
+	// Set connection timeout
 	r.SetDailTimeout(time.Second * 2)
 	err = r.Start()
 	if err != nil {
@@ -58,12 +58,12 @@ OKEX go版本的v5sdk，仅供学习交流使用。
 	defer r.Stop()
 
 	var res bool
-	// 私有频道需要登录
+	// Private channel requires login
 	res, _, err = r.Login(apikey, secretKey, passphrase)
 	if res {
-		fmt.Println("登录成功！")
+		fmt.Println("login successful！")
 	} else {
-		fmt.Println("登录失败！", err)
+		fmt.Println("Login failed！", err)
 		return
 	}
 
@@ -74,33 +74,33 @@ OKEX go版本的v5sdk，仅供学习交流使用。
 	args = append(args, arg)
 
 	start := time.Now()
-	// 订阅账户频道
+	// Subscribe to account channel
 	res, _, err = r.PrivAccout(OP_SUBSCRIBE, args)
 	if res {
 		usedTime := time.Since(start)
-		fmt.Println("订阅成功！耗时:", usedTime.String())
+		fmt.Println("Successfully subscribed! time consuming:", usedTime.String())
 	} else {
-		fmt.Println("订阅失败！", err)
+		fmt.Println("Subscription failed！", err)
 	}
 
 	time.Sleep(100 * time.Second)
 	start = time.Now()
-	// 取消订阅账户频道
+	// Unsubscribe account channel
 	res, _, err = r.PrivAccout(OP_UNSUBSCRIBE, args)
 	if res {
 		usedTime := time.Since(start)
-		fmt.Println("取消订阅成功！", usedTime.String())
+		fmt.Println("Unsubscribe successfully！", usedTime.String())
 	} else {
-		fmt.Println("取消订阅失败！", err)
+		fmt.Println("Failed to unsubscribe！", err)
 	}
 ```
-更多示例请查看ws/ws_priv_channel_test.go  
+See more examples ws/ws_priv_channel_test.go  
 
-### 公有频道
+### Public channel
 ```go
     ep := "wss://ws.okex.com:8443/ws/v5/public?brokerId=9999"
 
-	// 创建ws客户端
+	// Create ws client
 	r, err := NewWsClient(ep)
 	if err != nil {
 		log.Println(err)
@@ -108,7 +108,7 @@ OKEX go版本的v5sdk，仅供学习交流使用。
 	}
 
 	
-	// 设置连接超时
+	// Set connection timeout
 	r.SetDailTimeout(time.Second * 2)
 	err = r.Start()
 	if err != nil {
@@ -127,26 +127,26 @@ OKEX go版本的v5sdk，仅供学习交流使用。
 
 	start := time.Now()
 
-	// 订阅产品频道
+	// Subscribe to product channel
 	res, _, err := r.PubInstruemnts(OP_SUBSCRIBE, args)
 	if res {
 		usedTime := time.Since(start)
-		fmt.Println("订阅成功！", usedTime.String())
+		fmt.Println("Successfully subscribed！", usedTime.String())
 	} else {
-		fmt.Println("订阅失败！", err)
+		fmt.Println("Subscription failed！", err)
 	}
 
 	time.Sleep(30 * time.Second)
 
 	start = time.Now()
 
-	// 取消订阅产品频道
+	// Unsubscribe product channel
 	res, _, err = r.PubInstruemnts(OP_UNSUBSCRIBE, args)
 	if res {
 		usedTime := time.Since(start)
-		fmt.Println("取消订阅成功！", usedTime.String())
+		fmt.Println("Unsubscribe successfully！", usedTime.String())
 	} else {
-		fmt.Println("取消订阅失败！", err)
+		fmt.Println("Failed to unsubscribe！", err)
 	}
 ```
 更多示例请查看ws/ws_pub_channel_test.go  
@@ -155,7 +155,7 @@ OKEX go版本的v5sdk，仅供学习交流使用。
 ```go
     ep := "wss://ws.okex.com:8443/ws/v5/private?brokerId=9999"
 
-	// 填写您自己的APIKey信息
+	// Fill in your own APIKey information
 	apikey := "xxxx"
 	secretKey := "xxxxx"
 	passphrase := "xxxxx"
@@ -163,14 +163,14 @@ OKEX go版本的v5sdk，仅供学习交流使用。
 	var res bool
 	var req_id string
 
-	// 创建ws客户端
+	// Create ws client
 	r, err := NewWsClient(ep)
 	if err != nil {
 		log.Println(err)
 		return
 	}
 
-	// 设置连接超时
+	// Set connection timeout
 	r.SetDailTimeout(time.Second * 2)
 	err = r.Start()
 	if err != nil {
@@ -182,9 +182,9 @@ OKEX go版本的v5sdk，仅供学习交流使用。
 
 	res, _, err = r.Login(apikey, secretKey, passphrase)
 	if res {
-		fmt.Println("登录成功！")
+		fmt.Println("login successful！")
 	} else {
-		fmt.Println("登录失败！", err)
+		fmt.Println("Login failed！", err)
 		return
 	}
 
@@ -197,80 +197,82 @@ OKEX go版本的v5sdk，仅供学习交流使用。
 	param["sz"] = "200"
 	req_id = "00001"
 
-	// 单个下单
+	// Single order
 	res, _, err = r.PlaceOrder(req_id, param)
 	if res {
 		usedTime := time.Since(start)
-		fmt.Println("下单成功！", usedTime.String())
+		fmt.Println("successfully ordered！", usedTime.String())
 	} else {
 		usedTime := time.Since(start)
-		fmt.Println("下单失败！", usedTime.String(), err)
+		fmt.Println("Order failed！", usedTime.String(), err)
 	}
 
 ```
-更多示例请查看ws/ws_jrpc_test.go  
+See more examples ws/ws_jrpc_test.go  
 
-## wesocket推送
-websocket推送数据分为两种类型数据:`普通推送数据`和`深度类型数据`。  
+## wesocket push
+Websocket push data is divided into two types of data: `normal push data` and `deep type data`.
 
 ```go
 ws/wImpl/BookData.go
 
-// 普通推送
+// Ordinary push
 type MsgData struct {
 	Arg  map[string]string `json:"arg"`
 	Data []interface{}     `json:"data"`
 }
 
-// 深度数据
+// Depth data
 type DepthData struct {
 	Arg    map[string]string `json:"arg"`
 	Action string            `json:"action"`
 	Data   []DepthDetail     `json:"data"`
 }
 ```
-如果需要对推送数据做处理用户可以自定义回调函数:
-1. 全局消息处理的回调函数  
-该回调函数会处理所有从服务端接受到的数据。
+If you need to process the push data, users can customize the callback function:
+1. Callback function for global message processing
+   The callback function will process all the data received from the server.
 ```go
 /*
-	添加全局消息处理的回调函数
+	Add callback function for global message processing
 */
 func (a *WsClient) AddMessageHook(fn ReceivedDataCallback) error {
 	a.onMessageHook = fn
 	return nil
 }
 ```
-使用方法参见 ws/ws_test.go中测试用例TestAddMessageHook。
+For usage, please refer to the test case TestAddMessageHook in ws/ws_test.go.
 
-2. 订阅消息处理回调函数  
-可以处理所有非深度类型的数据，包括 订阅/取消订阅，普通推送数据。
+2. Subscription message processing callback function
+   It can handle all non-deep types of data, including subscription/unsubscription, and general push data.
 ```go
 /*
-	添加订阅消息处理的回调函数
+Add callback function for subscription message processing
 */
+ */
 func (a *WsClient) AddBookMsgHook(fn ReceivedMsgDataCallback) error {
 	a.onBookMsgHook = fn
 	return nil
 }
 ```
-使用方法参见 ws/ws_test.go中测试用例TestAddBookedDataHook。
+For usage, please refer to the test case TestAddBookedDataHook in ws/ws_test.go.
 
 
-3. 深度消息处理的回调函数  
-这里需要说明的是，Wsclient提供了深度数据管理和自动checksum的功能，用户如果需要关闭此功能，只需要调用EnableAutoDepthMgr方法。
+3. In-depth message processing callback function
+   What needs to be explained here is that Wsclient provides in-depth data management and automatic checksum functions. If users need to turn off this function, they only need to call the EnableAutoDepthMgr method.
 ```go
 /*
-	添加深度消息处理的回调函数
+Add callback function for in-depth message processing
 */
+ */
 func (a *WsClient) AddDepthHook(fn ReceivedDepthDataCallback) error {
 	a.onDepthHook = fn
 	return nil
 }
 ```
-使用方法参见 ws/ws_pub_channel_test.go中测试用例TestOrderBooks。
+For how to use it, please refer to the test case TestOrderBooks in ws/ws_pub_channel_test.go.
 
-4. 错误消息类型回调函数  
+4. Error message type callback function
 ```go
 func (a *WsClient) AddErrMsgHook(fn ReceivedDataCallback) error {
 	a.OnErrorHook = fn
@@ -278,6 +280,6 @@ func (a *WsClient) AddErrMsgHook(fn ReceivedDataCallback) error {
 }
 ```
 
-# 联系方式
-邮箱:caron_co@163.com  
-微信:caron_co
+# Contact information
+Email: caron_co@163.com
+WeChat: caron_co
