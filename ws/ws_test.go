@@ -35,10 +35,10 @@ func TestWsClient_SubscribeAndUnSubscribe(t *testing.T) {
 	res, _, err = r.Subscribe(param)
 	if res {
 		usedTime := time.Since(start)
-		fmt.Println("订阅成功！", usedTime.String())
+		fmt.Println("Successfully subscribed！", usedTime.String())
 	} else {
-		fmt.Println("订阅失败！", err)
-		t.Fatal("订阅失败！", err)
+		fmt.Println("Subscription failed！", err)
+		t.Fatal("Subscription failed！", err)
 		//return
 	}
 
@@ -49,10 +49,10 @@ func TestWsClient_SubscribeAndUnSubscribe(t *testing.T) {
 	res, _, err = r.UnSubscribe(param)
 	if res {
 		usedTime := time.Since(start)
-		fmt.Println("取消订阅成功！", usedTime.String())
+		fmt.Println("Unsubscribe successfully！", usedTime.String())
 	} else {
-		fmt.Println("取消订阅失败！", err)
-		t.Fatal("取消订阅失败！", err)
+		fmt.Println("Cancel Subscription failed！", err)
+		t.Fatal("Cancel Subscription failed！", err)
 	}
 
 }
@@ -73,10 +73,10 @@ func TestWsClient_SubscribeAndUnSubscribe_priv(t *testing.T) {
 		res, data, err = r.Subscribe(v)
 		if res {
 			usedTime := time.Since(start)
-			fmt.Println("订阅成功！", usedTime.String())
+			fmt.Println("Successfully subscribed！", usedTime.String())
 			PrintDetail(data)
 		} else {
-			fmt.Println("订阅失败！", err)
+			fmt.Println("Subscription failed！", err)
 			//return
 		}
 		time.Sleep(60 * time.Second)
@@ -86,9 +86,9 @@ func TestWsClient_SubscribeAndUnSubscribe_priv(t *testing.T) {
 		res, _, err = r.UnSubscribe(v)
 		if res {
 			usedTime := time.Since(start)
-			fmt.Println("取消订阅成功！", usedTime.String())
+			fmt.Println("Unsubscribe successfully！", usedTime.String())
 		} else {
-			fmt.Println("取消订阅失败！", err)
+			fmt.Println("Cancel Subscription failed！", err)
 		}
 
 	}
@@ -259,10 +259,10 @@ func TestAddBookedDataHook(t *testing.T) {
 
 		res, _, err = r.Subscribe(param)
 		if res {
-			fmt.Println("订阅成功！")
+			fmt.Println("Successfully subscribed！")
 		} else {
-			fmt.Println("订阅失败！", err)
-			t.Fatal("订阅失败！", err)
+			fmt.Println("Subscription failed！", err)
+			t.Fatal("Subscription failed！", err)
 			//return
 		}
 
@@ -288,10 +288,10 @@ func TestAddBookedDataHook(t *testing.T) {
 
 		res, _, err = r.Subscribe(param)
 		if res {
-			fmt.Println("订阅成功！")
+			fmt.Println("Successfully subscribed！")
 		} else {
-			fmt.Println("订阅失败！", err)
-			t.Fatal("订阅失败！", err)
+			fmt.Println("Subscription failed！", err)
+			t.Fatal("Subscription failed！", err)
 			//return
 		}
 
@@ -350,10 +350,10 @@ func TestSubscribeTBT(t *testing.T) {
 
 	res, _, err = r.Subscribe(param)
 	if res {
-		fmt.Println("订阅成功！")
+		fmt.Println("Successfully subscribed！")
 	} else {
-		fmt.Println("订阅失败！", err)
-		t.Fatal("订阅失败！", err)
+		fmt.Println("Subscription failed！", err)
+		t.Fatal("Subscription failed！", err)
 		//return
 	}
 
@@ -375,10 +375,10 @@ func TestSubscribeBalAndPos(t *testing.T) {
 
 	res, _, err = r.Subscribe(param)
 	if res {
-		fmt.Println("订阅成功！")
+		fmt.Println("Successfully subscribed！")
 	} else {
-		fmt.Println("订阅失败！", err)
-		t.Fatal("订阅失败！", err)
+		fmt.Println("Subscription failed！", err)
+		t.Fatal("Subscription failed！", err)
 		//return
 	}
 

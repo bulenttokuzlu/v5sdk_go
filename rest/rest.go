@@ -6,11 +6,11 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	. "github.com/bulenttokuzlu/v5sdk_go/utils"
 	"io/ioutil"
 	"net/http"
 	"strings"
 	"time"
-	. "github.com/bulenttokuzlu/v5sdk_go/utils"
 )
 
 type RESTAPI struct {
@@ -105,7 +105,7 @@ func (this *RESTAPI) SetAPIKey(apiKey, secKey, passPhrase string) *RESTAPI {
 
 func (this *RESTAPI) SetUserId(userId string) *RESTAPI {
 	if this.ApiKeyInfo == nil {
-		fmt.Println("ApiKey为空")
+		fmt.Println("ApiKey is empty")
 		return this
 	}
 
@@ -150,7 +150,7 @@ func (this *RESTAPI) Post(ctx context.Context, uri string, param *map[string]int
 func (this *RESTAPI) Run(ctx context.Context) (res *RESTAPIResult, err error) {
 
 	if this.ApiKeyInfo == nil {
-		err = errors.New("APIKey不可为空")
+		err = errors.New("APIKey cannot be empty")
 		return
 	}
 
@@ -200,7 +200,7 @@ func (this *RESTAPI) Run(ctx context.Context) (res *RESTAPIResult, err error) {
 	this.PrintRequest(req, body, preHash)
 	resp, err := client.Do(req)
 	if err != nil {
-		fmt.Println("请求失败！", err)
+		fmt.Println("Request failed！", err)
 		return
 	}
 	defer resp.Body.Close()
@@ -209,7 +209,7 @@ func (this *RESTAPI) Run(ctx context.Context) (res *RESTAPIResult, err error) {
 
 	resBuff, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		fmt.Println("获取请求结果失败！", err)
+		fmt.Println("Failed to get the request result！", err)
 		return
 	}
 
@@ -220,7 +220,7 @@ func (this *RESTAPI) Run(ctx context.Context) (res *RESTAPIResult, err error) {
 	var v5rsp Okexv5APIResponse
 	err = json.Unmarshal(resBuff, &v5rsp)
 	if err != nil {
-		fmt.Println("解析v5返回失败！", err)
+		fmt.Println("Failed to parse v5！", err)
 		return
 	}
 

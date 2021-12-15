@@ -17,13 +17,13 @@ import (
 	"github.com/gorilla/websocket"
 )
 
-// 全局回调函数
+// Global callback function
 type ReceivedDataCallback func(*Msg) error
 
-// 普通订阅推送数据回调函数
+// Ordinary subscription push data callback function
 type ReceivedMsgDataCallback func(time.Time, MsgData) error
 
-// 深度订阅推送数据回调函数
+// Deep subscription push data callback function
 type ReceivedDepthDataCallback func(time.Time, DepthData) error
 
 // websocket
@@ -31,33 +31,33 @@ type WsClient struct {
 	WsEndPoint string
 	WsApi      *ApiInfo
 	conn       *websocket.Conn
-	sendCh     chan string //发消息队列
-	resCh      chan *Msg   //收消息队列
+	sendCh     chan string //Message queue
+	resCh      chan *Msg   //Receive message queue
 
 	errCh chan *Msg
-	regCh map[Event]chan *Msg //请求响应队列
+	regCh map[Event]chan *Msg //Request response queue
 
 	quitCh chan struct{}
 	lock   sync.RWMutex
 
-	onMessageHook ReceivedDataCallback      //全局消息回调函数
-	onBookMsgHook ReceivedMsgDataCallback   //普通订阅消息回调函数
-	onDepthHook   ReceivedDepthDataCallback //深度订阅消息回调函数
-	OnErrorHook   ReceivedDataCallback      //错误处理回调函数
+	onMessageHook ReceivedDataCallback      //Global message callback function
+	onBookMsgHook ReceivedMsgDataCallback   //Ordinary subscription message callback function
+	onDepthHook   ReceivedDepthDataCallback //Deep subscription message callback function
+	OnErrorHook   ReceivedDataCallback      //Error handling callback function
 
-	// 记录深度信息
+	// Record depth information
 	DepthDataList map[string]DepthDetail
-	autoDepthMgr  bool // 深度数据管理（checksum等）
+	autoDepthMgr  bool // In-depth data management (checksum, etc.)
 	DepthDataLock sync.RWMutex
 
-	isStarted   bool //防止重复启动和关闭
+	isStarted   bool //Prevent repeated startup and shutdown
 	dailTimeout time.Duration
 }
 
 /*
-	服务端响应详细信息
-	Timestamp: 接受到消息的时间
-	Info: 接受到的消息字符串
+Server response details
+Timestamp: The time when the message was received
+Info: The received message string
 */
 type Msg struct {
 	Timestamp time.Time   `json:"timestamp"`
@@ -65,13 +65,13 @@ type Msg struct {
 }
 
 func (this *Msg) Print() {
-	fmt.Println("【消息时间】", this.Timestamp.Format("2006-01-02 15:04:05.000"))
+	fmt.Println("【Message time】", this.Timestamp.Format("2006-01-02 15:04:05.000"))
 	str, _ := json.Marshal(this.Info)
-	fmt.Println("【消息内容】", string(str))
+	fmt.Println("【Message content】", string(str))
 }
 
 /*
-	订阅结果封装后的消息结构体
+	Message structure after subscription result encapsulation
 */
 type ProcessDetail struct {
 	EndPoint string        `json:"endPoint"`
@@ -128,7 +128,7 @@ func (a *WsClient) updateDepthDataList(key string, dd DepthDetail) error {
 	a.DepthDataLock.Lock()
 	defer a.DepthDataLock.Unlock()
 	if _, ok := a.DepthDataList[key]; !ok {
-		return errors.New("更新失败！未发现记录" + key)
+		return errors.New("Update failed! No record found" + key)
 	}
 
 	a.DepthDataList[key] = dd
@@ -153,7 +153,7 @@ func (a *WsClient) EnableAutoDepthMgr(b bool) error {
 	defer a.DepthDataLock.Unlock()
 
 	if len(a.DepthDataList) != 0 {
-		err := errors.New("当前有深度数据处于订阅中")
+		err := errors.New("In-depth data is currently subscribed")
 		return err
 	}
 
@@ -192,18 +192,18 @@ func (a *WsClient) SetDailTimeout(tm time.Duration) {
 	a.dailTimeout = tm
 }
 
-// 非阻塞启动
+// Non-blocking start
 func (a *WsClient) Start() error {
 	a.lock.RLock()
 	if a.isStarted {
 		a.lock.RUnlock()
-		fmt.Println("ws已经启动")
+		fmt.Println("ws has started")
 		return nil
 	} else {
 		a.lock.RUnlock()
 		a.lock.Lock()
 		defer a.lock.Unlock()
-		// 增加超时处理
+		// Increase timeout handling
 		done := make(chan struct{})
 		ctx, cancel := context.WithTimeout(context.Background(), a.dailTimeout)
 		defer cancel()
@@ -222,7 +222,7 @@ func (a *WsClient) Start() error {
 		}(ctx)
 		select {
 		case <-ctx.Done():
-			err := errors.New("连接超时退出！")
+			err := errors.New("Connection timeout exit！")
 			return err
 		case <-done:
 
@@ -231,12 +231,12 @@ func (a *WsClient) Start() error {
 		go a.receive()
 		go a.work()
 		a.isStarted = true
-		log.Println("客户端已启动!", a.WsEndPoint)
+		log.Println("Client started!", a.WsEndPoint)
 		return nil
 	}
 }
 
-// 客户端退出消息channel
+// Client exit message channel
 func (a *WsClient) IsQuit() <-chan struct{} {
 	return a.quitCh
 }
@@ -257,59 +257,59 @@ func (a *WsClient) work() {
 
 	for {
 		select {
-		case <-ticker.C: // 保持心跳
+		case <-ticker.C: // Keep heartbeat
 			// go a.Ping(1000)
 			go func() {
 				_, _, err := a.Ping(1000)
 				if err != nil {
-					fmt.Println("心跳检测失败！", err)
+					fmt.Println("Heartbeat detection failed！", err)
 					a.Stop()
 					return
 				}
 
 			}()
 
-		case <-a.quitCh: // 保持心跳
+		case <-a.quitCh: // Keep heartbeat
 			return
-		case data, ok := <-a.resCh: //接收到服务端发来的消息
+		case data, ok := <-a.resCh: //Receive a message from the server
 			if !ok {
 				return
 			}
-			//log.Println("接收到来自resCh的消息:", data)
+			//log.Println("Received a message from resCh:", data)
 			if a.onMessageHook != nil {
 				err := a.onMessageHook(data)
 				if err != nil {
-					log.Println("执行onMessageHook函数错误！", err)
+					log.Println("Error executing onMessageHook function！", err)
 				}
 			}
-		case errMsg, ok := <-a.errCh: //错误处理
+		case errMsg, ok := <-a.errCh: //Error handling
 			if !ok {
 				return
 			}
 			if a.OnErrorHook != nil {
 				err := a.OnErrorHook(errMsg)
 				if err != nil {
-					log.Println("执行OnErrorHook函数错误！", err)
+					log.Println("Execute OnErrorHook function error！", err)
 				}
 			}
-		case req, ok := <-a.sendCh: //从发送队列中取出数据发送到服务端
+		case req, ok := <-a.sendCh: //Remove the data from the sending queue and send it to the server
 			if !ok {
 				return
 			}
-			//log.Println("接收到来自req的消息:", req)
+			//log.Println("Received a message from req:", req)
 			err := a.conn.WriteMessage(websocket.TextMessage, []byte(req))
 			if err != nil {
-				log.Printf("发送请求失败: %s\n", err)
+				log.Printf("Failed to send request: %s\n", err)
 				return
 			}
-			log.Printf("[发送请求] %v\n", req)
+			log.Printf("[send request] %v\n", req)
 		}
 	}
 
 }
 
 /*
-	处理接受到的消息
+	Process the received message
 */
 func (a *WsClient) receive() {
 	defer func() {
@@ -338,14 +338,14 @@ func (a *WsClient) receive() {
 		case websocket.BinaryMessage:
 			txtMsg, err = GzipDecode(message)
 			if err != nil {
-				log.Println("解压失败！")
+				log.Println("Unzip failed！")
 				continue
 			}
 		}
 
-		log.Println("[收到消息]", string(txtMsg))
+		log.Println("[Received the news]", string(txtMsg))
 
-		//发送结果到默认消息处理通道
+		//Send the result to the default message processing channel
 
 		timestamp := time.Now()
 		msg := &Msg{Timestamp: timestamp, Info: string(txtMsg)}
@@ -354,96 +354,96 @@ func (a *WsClient) receive() {
 
 		evt, data, err := a.parseMessage(txtMsg)
 		if err != nil {
-			log.Println("解析消息失败！", err)
+			log.Println("Failed to parse the message！", err)
 			continue
 		}
 
-		//log.Println("解析消息成功!消息类型 =", evt)
+		//log.Println("Message parsing succeeded! Message type =", evt)
 
 		a.lock.RLock()
 		ch, ok := a.regCh[evt]
 		a.lock.RUnlock()
 		if !ok {
-			//只有推送消息才会主动创建通道和消费队列
+			//Only push messages will actively create channels and consumption queues
 			if evt == EVENT_BOOKED_DATA || evt == EVENT_DEPTH_DATA {
-				//log.Println("channel不存在！event:", evt)
+				//log.Println("channel does not exist！event:", evt)
 				//a.lock.RUnlock()
 				a.lock.Lock()
 				a.regCh[evt] = make(chan *Msg)
 				ch = a.regCh[evt]
 				a.lock.Unlock()
 
-				//log.Println("创建", evt, "通道")
+				//log.Println("create", evt, "aisle")
 
-				// 创建消费队列
+				// Create consumption queue
 				go func(evt Event) {
-					//log.Println("创建goroutine  evt:", evt)
+					//log.Println("Create goroutine  evt:", evt)
 
 					for msg := range a.regCh[evt] {
 						//log.Println(msg)
 						// msg.Print()
 						switch evt {
-						// 处理普通推送数据
+						// Processing normal push data
 						case EVENT_BOOKED_DATA:
 							fn := a.onBookMsgHook
 							if fn != nil {
 								err = fn(msg.Timestamp, msg.Info.(MsgData))
 								if err != nil {
-									log.Println("订阅数据回调函数执行失败！", err)
+									log.Println("The subscribe data callback function failed to execute！", err)
 								}
-								//log.Println("函数执行成功！", err)
+								//log.Println("Function executed successfully！", err)
 							}
-						// 处理深度推送数据
+						// Processing deep push data
 						case EVENT_DEPTH_DATA:
 							fn := a.onDepthHook
 
 							depData := msg.Info.(DepthData)
 
-							// 开启深度数据管理功能的，会合并深度数据
+							// If the deep data management function is turned on, deep data will be merged
 							if a.autoDepthMgr {
 								a.MergeDepth(depData)
 							}
 
-							// 运行用户定义回调函数
+							// Run user-defined callback function
 							if fn != nil {
 								err = fn(msg.Timestamp, msg.Info.(DepthData))
 								if err != nil {
-									log.Println("深度回调函数执行失败！", err)
+									log.Println("Deep callback function execution failed！", err)
 								}
 
 							}
 						}
 
 					}
-					//log.Println("退出goroutine  evt:", evt)
+					//log.Println("Exit goroutine  evt:", evt)
 				}(evt)
 
 				//continue
 			} else {
-				//log.Println("程序异常！通道已关闭", evt)
+				//log.Println("The program is abnormal! Channel closed", evt)
 				continue
 			}
 
 		}
 
-		//log.Println(evt,"事件已注册",ch)
+		//log.Println(evt,"Event registered",ch)
 
 		ctx := context.Background()
 		ctx, cancel := context.WithTimeout(ctx, time.Millisecond*1000)
 		defer cancel()
 		select {
 		/*
-			丢弃消息容易引发数据处理处理错误
+			Discarding messages can easily lead to data processing errors
 		*/
 		// case <-ctx.Done():
-		// 	log.Println("等待超时，消息丢弃 - ", data)
+		// 	log.Println("Waiting timeout, message discarded - ", data)
 		case ch <- &Msg{Timestamp: timestamp, Info: data}:
 		}
 	}
 }
 
 /*
-	开启了深度数据管理功能后，系统会自动合并深度信息
+	After the in-depth data management function is turned on, the system will automatically merge in-depth information
 */
 func (a *WsClient) MergeDepth(depData DepthData) (err error) {
 	if !a.autoDepthMgr {
@@ -452,11 +452,11 @@ func (a *WsClient) MergeDepth(depData DepthData) (err error) {
 
 	key, err := json.Marshal(depData.Arg)
 	if err != nil {
-		err = errors.New("数据错误")
+		err = errors.New("data error")
 		return
 	}
 
-	// books5 不需要做checksum
+	// books5 No need to do checksum
 	if depData.Arg["channel"] == "books5" {
 		a.addDepthDataList(string(key), depData.Data[0])
 		return
@@ -466,7 +466,7 @@ func (a *WsClient) MergeDepth(depData DepthData) (err error) {
 
 		_, err = depData.CheckSum(nil)
 		if err != nil {
-			log.Println("校验失败", err)
+			log.Println("Verification failed", err)
 			return
 		}
 
@@ -478,15 +478,15 @@ func (a *WsClient) MergeDepth(depData DepthData) (err error) {
 		a.DepthDataLock.RLock()
 		oldSnapshot, ok := a.DepthDataList[string(key)]
 		if !ok {
-			log.Println("深度数据错误，全量数据未发现！")
-			err = errors.New("数据错误")
+			log.Println("Depth data error, not found in all data！")
+			err = errors.New("data error")
 			return
 		}
 		a.DepthDataLock.RUnlock()
 		newSnapshot, err = depData.CheckSum(&oldSnapshot)
 		if err != nil {
-			log.Println("深度校验失败", err)
-			err = errors.New("校验失败")
+			log.Println("Depth verification failed", err)
+			err = errors.New("Verification failed")
 			return
 		}
 
@@ -496,7 +496,7 @@ func (a *WsClient) MergeDepth(depData DepthData) (err error) {
 }
 
 /*
-	通过ErrorCode判断事件类型
+	Judge the event type by ErrorCode
 */
 func GetInfoFromErrCode(data ErrData) Event {
 	switch data.Code {
@@ -528,8 +528,8 @@ func GetInfoFromErrCode(data ErrData) Event {
 }
 
 /*
-   从error返回中解析出对应的channel
-   error信息样例
+Resolve the corresponding channel from the error return
+    Sample error message
  {"event":"error","msg":"channel:index-tickers,instId:BTC-USDT1 doesn't exist","code":"60018"}
 */
 func GetInfoFromErrMsg(raw string) (channel string) {
@@ -538,7 +538,7 @@ func GetInfoFromErrMsg(raw string) (channel string) {
 		fmt.Println("MustCompile err")
 		return
 	}
-	//提取关键信息
+	//Extract key information
 	result := reg.FindAllStringSubmatch(raw, -1)
 	for _, text := range result {
 		channel = text[1]
@@ -547,12 +547,12 @@ func GetInfoFromErrMsg(raw string) (channel string) {
 }
 
 /*
-	解析消息类型
+	Parse the message type
 */
 func (a *WsClient) parseMessage(raw []byte) (evt Event, data interface{}, err error) {
 	evt = EVENT_UNKNOWN
-	//log.Println("解析消息")
-	//log.Println("消息内容:", string(raw))
+	//log.Println("Parse the message")
+	//log.Println("Message content:", string(raw))
 	if string(raw) == "pong" {
 		evt = EVENT_PING
 		data = raw
@@ -584,9 +584,9 @@ func (a *WsClient) parseMessage(raw []byte) (evt Event, data interface{}, err er
 			return
 		case OP_ERROR:
 			data = errData
-			// TODO:细化报错对应的事件判断
+			// TODO:Refine the event judgment corresponding to the error report
 
-			//尝试从msg字段中解析对应的事件类型
+			//Try to parse the corresponding event type from the msg field
 			evt = GetInfoFromErrCode(errData)
 			if evt != EVENT_UNKNOWN {
 				return
@@ -673,12 +673,12 @@ func (a *WsClient) Stop() error {
 		close(ch)
 	}
 
-	log.Println("ws客户端退出!")
+	log.Println("ws client exit!")
 	return nil
 }
 
 /*
-	添加全局消息处理的回调函数
+	Add callback function for global message processing
 */
 func (a *WsClient) AddMessageHook(fn ReceivedDataCallback) error {
 	a.onMessageHook = fn
@@ -686,7 +686,7 @@ func (a *WsClient) AddMessageHook(fn ReceivedDataCallback) error {
 }
 
 /*
-	添加订阅消息处理的回调函数
+	Add callback function for subscription message processing
 */
 func (a *WsClient) AddBookMsgHook(fn ReceivedMsgDataCallback) error {
 	a.onBookMsgHook = fn
@@ -694,8 +694,8 @@ func (a *WsClient) AddBookMsgHook(fn ReceivedMsgDataCallback) error {
 }
 
 /*
-	添加深度消息处理的回调函数
-	例如:
+	Add callback function for in-depth message processing
+	For example:
 	cli.AddDepthHook(func(ts time.Time, data DepthData) error { return nil })
 */
 func (a *WsClient) AddDepthHook(fn ReceivedDepthDataCallback) error {
@@ -704,7 +704,7 @@ func (a *WsClient) AddDepthHook(fn ReceivedDepthDataCallback) error {
 }
 
 /*
-	添加错误类型消息处理的回调函数
+	Add callback function for error message processing
 */
 func (a *WsClient) AddErrMsgHook(fn ReceivedDataCallback) error {
 	a.OnErrorHook = fn
@@ -712,7 +712,7 @@ func (a *WsClient) AddErrMsgHook(fn ReceivedDataCallback) error {
 }
 
 /*
-	判断连接是否存活
+	Determine if the connection is alive
 */
 func (a *WsClient) IsAlive() bool {
 	res := false

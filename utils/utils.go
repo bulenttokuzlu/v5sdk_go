@@ -63,7 +63,7 @@ func PreHashString(timestamp string, method string, requestPath string, body str
  struct convert json string
 */
 func Struct2JsonString(raw interface{}) (jsonString string, err error) {
-	//fmt.Println("转化json,", raw)
+	//fmt.Println("Convert json,", raw)
 	data, err := json.Marshal(raw)
 	if err != nil {
 		log.Println("convert json failed!", err)
@@ -81,7 +81,6 @@ func GzipDecode(in []byte) ([]byte, error) {
 	return ioutil.ReadAll(reader)
 }
 
-
 /*
  Get a iso time
   eg: 2018-03-16T18:02:48.284Z
@@ -93,10 +92,3 @@ func IsoTime() string {
 	iso = string(isoBytes[:10]) + "T" + string(isoBytes[11:23]) + "Z"
 	return iso
 }
-
-
-
-
-
-
-

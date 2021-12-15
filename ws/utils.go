@@ -8,7 +8,7 @@ import (
 	"runtime/debug"
 )
 
-// 判断返回结果成功失败
+// Judge whether the returned result is successful or unsuccessful
 func checkResult(wsReq WSReqData, wsRsps []*Msg) (res bool, err error) {
 	defer func() {
 		a := recover()
@@ -30,24 +30,24 @@ func checkResult(wsReq WSReqData, wsRsps []*Msg) (res bool, err error) {
 			return
 		}
 		if wsReq.GetType() != v.Info.(WSRspData).MsgType() {
-			err = errors.New("消息类型不一致")
+			err = errors.New("Inconsistent message types")
 			return
 		}
 	}
 
-	//检查所有频道是否都更新成功
+	//Check whether all channels are updated successfully
 	if wsReq.GetType() == MSG_NORMAL {
 		req, ok := wsReq.(ReqData)
 		if !ok {
-			log.Println("类型转化失败", req)
-			err = errors.New("类型转化失败")
+			log.Println("Type conversion failed", req)
+			err = errors.New("Type conversion failed")
 			return
 		}
 
 		for idx, _ := range req.Args {
 			ok := false
 			i_req := req.Args[idx]
-			//fmt.Println("检查",i_req)
+			//fmt.Println("an examination",i_req)
 			for i, _ := range wsRsps {
 				info, _ := wsRsps[i].Info.(RspData)
 				//fmt.Println("<<",info)
@@ -57,7 +57,7 @@ func checkResult(wsReq WSReqData, wsRsps []*Msg) (res bool, err error) {
 				}
 			}
 			if !ok {
-				err = errors.New("未得到所有的期望的返回结果")
+				err = errors.New("Did not get all the expected return results")
 				return
 			}
 		}

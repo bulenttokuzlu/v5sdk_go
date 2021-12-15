@@ -6,7 +6,7 @@ import (
 )
 
 /*
-	产品频道
+	Product Channel
 */
 func (a *WsClient) PubInstruemnts(op string, params []map[string]string, timeOut ...int) (res bool, msg []*Msg, err error) {
 
@@ -18,7 +18,7 @@ func (a *WsClient) PubStatus(op string, timeOut ...int) (res bool, msg []*Msg, e
 }
 
 /*
-	行情频道
+	Quotes Channel
 */
 func (a *WsClient) PubTickers(op string, params []map[string]string, timeOut ...int) (res bool, msg []*Msg, err error) {
 
@@ -26,14 +26,14 @@ func (a *WsClient) PubTickers(op string, params []map[string]string, timeOut ...
 }
 
 /*
-	持仓总量频道
+	Total position channel
 */
 func (a *WsClient) PubOpenInsterest(op string, params []map[string]string, timeOut ...int) (res bool, msg []*Msg, err error) {
 	return a.PubChannel(EVENT_BOOK_OPEN_INTEREST, op, params, PERIOD_NONE, timeOut...)
 }
 
 /*
-	K线频道
+	K line channel
 */
 func (a *WsClient) PubKLine(op string, period Period, params []map[string]string, timeOut ...int) (res bool, msg []*Msg, err error) {
 
@@ -41,7 +41,7 @@ func (a *WsClient) PubKLine(op string, period Period, params []map[string]string
 }
 
 /*
-	交易频道
+	Trading channel
 */
 func (a *WsClient) PubTrade(op string, params []map[string]string, timeOut ...int) (res bool, msg []*Msg, err error) {
 
@@ -49,7 +49,7 @@ func (a *WsClient) PubTrade(op string, params []map[string]string, timeOut ...in
 }
 
 /*
-	预估交割/行权价格频道
+	Estimated delivery/exercise price channel
 */
 func (a *WsClient) PubEstDePrice(op string, params []map[string]string, timeOut ...int) (res bool, msg []*Msg, err error) {
 
@@ -58,7 +58,7 @@ func (a *WsClient) PubEstDePrice(op string, params []map[string]string, timeOut 
 }
 
 /*
-	标记价格频道
+	Mark price channel
 */
 func (a *WsClient) PubMarkPrice(op string, params []map[string]string, timeOut ...int) (res bool, msg []*Msg, err error) {
 
@@ -66,7 +66,7 @@ func (a *WsClient) PubMarkPrice(op string, params []map[string]string, timeOut .
 }
 
 /*
-	标记价格K线频道
+	Mark price K-line channel
 */
 func (a *WsClient) PubMarkPriceCandle(op string, pd Period, params []map[string]string, timeOut ...int) (res bool, msg []*Msg, err error) {
 
@@ -74,7 +74,7 @@ func (a *WsClient) PubMarkPriceCandle(op string, pd Period, params []map[string]
 }
 
 /*
-	限价频道
+	Limit channel
 */
 func (a *WsClient) PubLimitPrice(op string, params []map[string]string, timeOut ...int) (res bool, msg []*Msg, err error) {
 
@@ -82,15 +82,15 @@ func (a *WsClient) PubLimitPrice(op string, params []map[string]string, timeOut 
 }
 
 /*
-	深度频道
+	Deep channel
 */
 func (a *WsClient) PubOrderBooks(op string, channel string, params []map[string]string, timeOut ...int) (res bool, msg []*Msg, err error) {
 
 	switch channel {
-	// 400档快照
+	// 400 file snapshots
 	case "books":
 		return a.PubChannel(EVENT_BOOK_ORDER_BOOK, op, params, PERIOD_NONE, timeOut...)
-	// 5档快照
+	// 5 file snapshots
 	case "books5":
 		return a.PubChannel(EVENT_BOOK_ORDER_BOOK5, op, params, PERIOD_NONE, timeOut...)
 	// 400 tbt
@@ -101,14 +101,14 @@ func (a *WsClient) PubOrderBooks(op string, channel string, params []map[string]
 		return a.PubChannel(EVENT_BOOK_ORDER_BOOK50_TBT, op, params, PERIOD_NONE, timeOut...)
 
 	default:
-		err = errors.New("未知的channel")
+		err = errors.New("Unknown channel")
 		return
 	}
 
 }
 
 /*
-	期权定价频道
+	Option Pricing Channel
 */
 func (a *WsClient) PubOptionSummary(op string, params []map[string]string, timeOut ...int) (res bool, msg []*Msg, err error) {
 
@@ -116,7 +116,7 @@ func (a *WsClient) PubOptionSummary(op string, params []map[string]string, timeO
 }
 
 /*
-	资金费率频道
+	Funding rate channel
 */
 func (a *WsClient) PubFundRate(op string, params []map[string]string, timeOut ...int) (res bool, msg []*Msg, err error) {
 
@@ -124,7 +124,7 @@ func (a *WsClient) PubFundRate(op string, params []map[string]string, timeOut ..
 }
 
 /*
-	指数K线频道
+	Index K-Line Channel
 */
 func (a *WsClient) PubKLineIndex(op string, pd Period, params []map[string]string, timeOut ...int) (res bool, msg []*Msg, err error) {
 
@@ -132,7 +132,7 @@ func (a *WsClient) PubKLineIndex(op string, pd Period, params []map[string]strin
 }
 
 /*
-	指数行情频道
+	Index market channel
 */
 func (a *WsClient) PubIndexTickers(op string, params []map[string]string, timeOut ...int) (res bool, msg []*Msg, err error) {
 

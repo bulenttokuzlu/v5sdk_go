@@ -40,7 +40,7 @@ type DepthDetail struct {
 func (this *DepthData) CheckSum(snap *DepthDetail) (pDepData *DepthDetail, err error) {
 
 	if len(this.Data) != 1 {
-		err = errors.New("深度数据错误！")
+		err = errors.New("Depth data error！")
 		return
 	}
 
@@ -48,17 +48,17 @@ func (this *DepthData) CheckSum(snap *DepthDetail) (pDepData *DepthDetail, err e
 		_, cs := CalCrc32(this.Data[0].Asks, this.Data[0].Bids)
 
 		if cs != this.Data[0].Checksum {
-			err = errors.New("校验失败！")
+			err = errors.New("Verification failed！")
 			return
 		}
 		pDepData = &this.Data[0]
-		log.Println("snapshot校验成功", this.Data[0].Checksum)
+		log.Println("Snapshot verification succeeded", this.Data[0].Checksum)
 
 	}
 
 	if this.Action == DEPTH_UPDATE {
 		if snap == nil {
-			err = errors.New("深度快照数据不可为空！")
+			err = errors.New("Deepin Snapshot data cannot be empty！")
 			return
 		}
 
@@ -66,7 +66,7 @@ func (this *DepthData) CheckSum(snap *DepthDetail) (pDepData *DepthDetail, err e
 		if err != nil {
 			return
 		}
-		log.Println("update校验成功", this.Data[0].Checksum)
+		log.Println("update verification succeeded", this.Data[0].Checksum)
 	}
 
 	return
@@ -209,7 +209,7 @@ func MergDepthData(snap DepthDetail, update DepthDetail, expChecksum int32) (res
 
 	cBuf, checksum := CalCrc32(newAskDepths, newBidDepths)
 	if checksum != expChecksum {
-		err = errors.New("校验失败！")
+		err = errors.New("Verification failed！")
 		log.Println("buffer:", cBuf.String())
 		log.Fatal(checksum, expChecksum)
 		return

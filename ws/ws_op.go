@@ -34,7 +34,7 @@ func (a *WsClient) Ping(timeOut ...int) (res bool, detail *ProcessDetail, err er
 	msg, err := a.process(ctx, EVENT_PING, nil)
 	if err != nil {
 		res = false
-		log.Println("处理请求失败!", err)
+		log.Println("Failed to process request!", err)
 		return
 	}
 	detail.Data = msg
@@ -54,7 +54,7 @@ func (a *WsClient) Ping(timeOut ...int) (res bool, detail *ProcessDetail, err er
 }
 
 /*
-	登录私有频道
+	Sign in to private channel
 */
 func (a *WsClient) Login(apiKey, secKey, passPhrase string, timeOut ...int) (res bool, detail *ProcessDetail, err error) {
 
@@ -91,7 +91,7 @@ func (a *WsClient) Login(apiKey, secKey, passPhrase string, timeOut ...int) (res
 	//fmt.Println("preHash:", preHash)
 	var sign string
 	if sign, err = HmacSha256Base64Signer(preHash, secKey); err != nil {
-		log.Println("处理签名失败！", err)
+		log.Println("Failed to process signature！", err)
 		return
 	}
 
@@ -116,7 +116,7 @@ func (a *WsClient) Login(apiKey, secKey, passPhrase string, timeOut ...int) (res
 	msg, err := a.process(ctx, EVENT_LOGIN, req)
 	if err != nil {
 		res = false
-		log.Println("处理请求失败!", req, err)
+		log.Println("Failed to process request!", req, err)
 		return
 	}
 	detail.Data = msg
@@ -129,9 +129,9 @@ func (a *WsClient) Login(apiKey, secKey, passPhrase string, timeOut ...int) (res
 	info, _ := msg[0].Info.(ErrData)
 
 	if info.Code == "0" && info.Event == OP_LOGIN {
-		log.Println("登录成功!")
+		log.Println("login successful!")
 	} else {
-		log.Println("登录失败!")
+		log.Println("Login failed!")
 		res = false
 		return
 	}
@@ -140,7 +140,7 @@ func (a *WsClient) Login(apiKey, secKey, passPhrase string, timeOut ...int) (res
 }
 
 /*
-	等待结果响应
+	Wait for result response
 */
 func (a *WsClient) waitForResult(e Event, timeOut int) (data interface{}, err error) {
 
@@ -148,17 +148,17 @@ func (a *WsClient) waitForResult(e Event, timeOut int) (data interface{}, err er
 		a.lock.Lock()
 		a.regCh[e] = make(chan *Msg)
 		a.lock.Unlock()
-		//log.Println("注册", e, "事件成功")
+		//log.Println("Registered ", e, "event succeeded")
 	}
 
 	a.lock.RLock()
 	defer a.lock.RUnlock()
 	ch := a.regCh[e]
-	//log.Println(e, "等待响应！")
+	//log.Println(e, "Waiting for response！")
 	select {
 	case <-time.After(time.Duration(timeOut) * time.Millisecond):
-		log.Println(e, "超时未响应！")
-		err = errors.New(e.String() + "超时未响应！")
+		log.Println(e, "Timeout not responding！")
+		err = errors.New(e.String() + "Timeout not responding！")
 		return
 	case data = <-ch:
 		//log.Println(data)
@@ -168,13 +168,13 @@ func (a *WsClient) waitForResult(e Event, timeOut int) (data interface{}, err er
 }
 
 /*
-	发送消息到服务端
+	Send a message to the server
 */
 func (a *WsClient) Send(ctx context.Context, op WSReqData) (err error) {
 	select {
 	case <-ctx.Done():
-		log.Println("发生失败退出！")
-		err = errors.New("发送超时退出！")
+		log.Println("Exit on failure！")
+		err = errors.New("Send timeout exit！")
 	case a.sendCh <- op.ToString():
 	}
 
@@ -195,37 +195,37 @@ func (a *WsClient) process(ctx context.Context, e Event, op WSReqData) (data []*
 		}
 	}
 	defer func() {
-		//fmt.Println("处理完成,", e.String())
+		//fmt.Println("Processing complete,", e.String())
 		detail.UsedTime = detail.RecvTime.Sub(detail.SendTime)
 	}()
 
-	//查看事件是否被注册
+	//Check if the event is registered
 	if _, ok := a.regCh[e]; !ok {
 		a.lock.Lock()
 		a.regCh[e] = make(chan *Msg)
 		a.lock.Unlock()
-		//log.Println("注册", e, "事件成功")
+		//log.Println("Register", e, "Event successful")
 	} else {
-		//log.Println("事件", e, "已注册！")
-		err = errors.New("事件" + e.String() + "尚未处理完毕")
+		//log.Println("Event ", e, "registered! ")
+		err = errors.New("event" + e.String() + "Not yet finished")
 		return
 	}
 
-	//预期请求响应的条数
+	//The number of expected request responses
 	expectCnt := 1
 	if op != nil {
 		expectCnt = op.Len()
 	}
 	recvCnt := 0
 
-	//等待完成通知
+	//Wait for completion notification
 	wg := sync.WaitGroup{}
 	wg.Add(1)
 	go func(ctx context.Context) {
 		defer func() {
 			a.lock.Lock()
 			delete(a.regCh, e)
-			//log.Println("事件已注销!",e)
+			//log.Println("Event has been logged out!",e)
 			a.lock.Unlock()
 			wg.Done()
 		}()
@@ -234,22 +234,22 @@ func (a *WsClient) process(ctx context.Context, e Event, op WSReqData) (data []*
 		ch := a.regCh[e]
 		a.lock.RUnlock()
 
-		//log.Println(e, "等待响应！")
+		//log.Println(e, "Waiting for response！")
 		done := false
 		ok := true
 		for {
 			var item *Msg
 			select {
 			case <-ctx.Done():
-				log.Println(e, "超时未响应！")
-				err = errors.New(e.String() + "超时未响应！")
+				log.Println(e, "Timeout not responding！")
+				err = errors.New(e.String() + "Timeout not responding！")
 				return
 			case item, ok = <-ch:
 				if !ok {
 					return
 				}
 				detail.RecvTime = time.Now()
-				//log.Println(e, "接受到数据", item)
+				//log.Println(e, "Data received", item)
 				data = append(data, item)
 				recvCnt++
 				//log.Println(data)
@@ -278,7 +278,7 @@ func (a *WsClient) process(ctx context.Context, e Event, op WSReqData) (data []*
 		detail.ReqInfo = op.ToString()
 		err = a.Send(ctx, op)
 		if err != nil {
-			log.Println("发送[", e, "]消息失败！", err)
+			log.Println("send[", e, "]Message failed！", err)
 			return
 		}
 		detail.SendTime = time.Now()
@@ -289,8 +289,8 @@ func (a *WsClient) process(ctx context.Context, e Event, op WSReqData) (data []*
 }
 
 /*
-	根据args请求参数判断请求类型
-	如：{"channel": "account","ccy": "BTC"} 类型为 EVENT_BOOK_ACCOUNT
+Determine the request type according to the args request parameter
+For example: {"channel": "account","ccy": "BTC"} The type is EVENT_BOOK_ACCOUNT
 */
 func GetEventByParam(param map[string]string) (evtId Event) {
 	evtId = EVENT_UNKNOWN
@@ -304,8 +304,8 @@ func GetEventByParam(param map[string]string) (evtId Event) {
 }
 
 /*
-	订阅频道。
-	req：请求json字符串
+Subscribe to the channel.
+req: request json string
 */
 func (a *WsClient) Subscribe(param map[string]string, timeOut ...int) (res bool, detail *ProcessDetail, err error) {
 	res = true
@@ -316,7 +316,7 @@ func (a *WsClient) Subscribe(param map[string]string, timeOut ...int) (res bool,
 
 	evtid := GetEventByParam(param)
 	if evtid == EVENT_UNKNOWN {
-		err = errors.New("非法的请求参数！")
+		err = errors.New("Illegal request parameter！")
 		return
 	}
 
@@ -339,12 +339,12 @@ func (a *WsClient) Subscribe(param map[string]string, timeOut ...int) (res bool,
 	msg, err := a.process(ctx, evtid, req)
 	if err != nil {
 		res = false
-		log.Println("处理请求失败!", req, err)
+		log.Println("Failed to process request!", req, err)
 		return
 	}
 	detail.Data = msg
 
-	//检查所有频道是否都更新成功
+	//Check whether all channels are updated successfully
 	res, err = checkResult(req, msg)
 	if err != nil {
 		res = false
@@ -355,8 +355,8 @@ func (a *WsClient) Subscribe(param map[string]string, timeOut ...int) (res bool,
 }
 
 /*
-	取消订阅频道。
-	req：请求json字符串
+Unsubscribe from the channel.
+req: request json string
 */
 func (a *WsClient) UnSubscribe(param map[string]string, timeOut ...int) (res bool, detail *ProcessDetail, err error) {
 	res = true
@@ -367,7 +367,7 @@ func (a *WsClient) UnSubscribe(param map[string]string, timeOut ...int) (res boo
 
 	evtid := GetEventByParam(param)
 	if evtid == EVENT_UNKNOWN {
-		err = errors.New("非法的请求参数！")
+		err = errors.New("Illegal request parameter！")
 		return
 	}
 
@@ -389,11 +389,11 @@ func (a *WsClient) UnSubscribe(param map[string]string, timeOut ...int) (res boo
 	msg, err := a.process(ctx, evtid, req)
 	if err != nil {
 		res = false
-		log.Println("处理请求失败!", req, err)
+		log.Println("Failed to process request!", req, err)
 		return
 	}
 	detail.Data = msg
-	//检查所有频道是否都更新成功
+	//Check whether all channels are updated successfully
 	res, err = checkResult(req, msg)
 	if err != nil {
 		res = false
@@ -404,7 +404,7 @@ func (a *WsClient) UnSubscribe(param map[string]string, timeOut ...int) (res boo
 }
 
 /*
-	jrpc请求
+	jrpc request
 */
 func (a *WsClient) Jrpc(id, op string, params []map[string]interface{}, timeOut ...int) (res bool, detail *ProcessDetail, err error) {
 	res = true
@@ -415,7 +415,7 @@ func (a *WsClient) Jrpc(id, op string, params []map[string]interface{}, timeOut 
 
 	evtid := GetEventId(op)
 	if evtid == EVENT_UNKNOWN {
-		err = errors.New("非法的请求参数！")
+		err = errors.New("Illegal request parameter！")
 		return
 	}
 
@@ -434,12 +434,12 @@ func (a *WsClient) Jrpc(id, op string, params []map[string]interface{}, timeOut 
 	msg, err := a.process(ctx, evtid, req)
 	if err != nil {
 		res = false
-		log.Println("处理请求失败!", req, err)
+		log.Println("Failed to process request!", req, err)
 		return
 	}
 	detail.Data = msg
 
-	//检查所有频道是否都更新成功
+	//Check whether all channels are updated successfully
 	res, err = checkResult(req, msg)
 	if err != nil {
 		res = false
@@ -451,7 +451,7 @@ func (a *WsClient) Jrpc(id, op string, params []map[string]interface{}, timeOut 
 
 func (a *WsClient) PubChannel(evtId Event, op string, params []map[string]string, pd Period, timeOut ...int) (res bool, msg []*Msg, err error) {
 
-	// 参数校验
+	// Parameter verification
 	pa, err := checkParams(evtId, params, pd)
 	if err != nil {
 		return
@@ -473,11 +473,11 @@ func (a *WsClient) PubChannel(evtId Event, op string, params []map[string]string
 	msg, err = a.process(ctx, evtId, req)
 	if err != nil {
 		res = false
-		log.Println("处理请求失败!", req, err)
+		log.Println("Failed to process request!", req, err)
 		return
 	}
 
-	//检查所有频道是否都更新成功
+	//Check whether all channels are updated successfully
 
 	res, err = checkResult(req, msg)
 	if err != nil {
@@ -488,12 +488,12 @@ func (a *WsClient) PubChannel(evtId Event, op string, params []map[string]string
 	return
 }
 
-// 参数校验
+// Parameter verification
 func checkParams(evtId Event, params []map[string]string, pd Period) (res []map[string]string, err error) {
 
 	channel := evtId.GetChannel(pd)
 	if channel == "" {
-		err = errors.New("参数校验失败!未知的类型:" + evtId.String())
+		err = errors.New("Parameter verification failed! Unknown type:" + evtId.String())
 		return
 	}
 	log.Println(channel)
@@ -515,7 +515,7 @@ func checkParams(evtId Event, params []map[string]string, pd Period) (res []map[
 				tmp["channel"] = channel
 			} else {
 				if val != channel {
-					err = errors.New("参数校验失败!channel应为" + channel + val)
+					err = errors.New("Parameter verification failed! channel should be" + channel + val)
 					return
 				}
 			}

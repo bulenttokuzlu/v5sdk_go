@@ -8,13 +8,13 @@ import (
 )
 
 /*
-	websocket交易 通用请求
-	参数说明：
-		evtId：封装的事件类型
-		id: 请求ID
-		op: 请求参数op
-		params: 请求参数
-		timeOut: 超时时间
+	websocket transaction general request
+	Parameter Description:
+evtId: encapsulated event type
+id: request ID
+op: request parameter op
+params: request parameters
+timeOut: timeout
 */
 func (a *WsClient) jrpcReq(evtId Event, op string, id string, params []map[string]interface{}, timeOut ...int) (res bool, detail *ProcessDetail, err error) {
 	res = true
@@ -41,7 +41,7 @@ func (a *WsClient) jrpcReq(evtId Event, op string, id string, params []map[strin
 	msg, err := a.process(ctx, evtId, req)
 	if err != nil {
 		res = false
-		log.Println("处理请求失败!", req, err)
+		log.Println("Failed to process request!", req, err)
 		return
 	}
 	detail.Data = msg
