@@ -149,9 +149,9 @@ See more examples ws/ws_priv_channel_test.go
 		fmt.Println("Failed to unsubscribe！", err)
 	}
 ```
-更多示例请查看ws/ws_pub_channel_test.go  
+See more examples ws/ws_pub_channel_test.go  
 
-## websocket交易
+## websocket trade
 ```go
     ep := "wss://ws.okex.com:8443/ws/v5/private?brokerId=9999"
 
