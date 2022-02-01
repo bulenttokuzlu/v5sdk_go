@@ -193,7 +193,7 @@ func (a *WsClient) SetDailTimeout(tm time.Duration) {
 }
 
 // Non-blocking start
-func (a *WsClient) Start(keepalive bool) error {
+func (a *WsClient) Start() error {
 	a.lock.RLock()
 	if a.isStarted {
 		a.lock.RUnlock()
@@ -229,9 +229,7 @@ func (a *WsClient) Start(keepalive bool) error {
 		}
 
 		go a.receive()
-		if keepalive {
-			go a.work()
-		}
+		go a.work()
 		a.isStarted = true
 		log.Println("Client started!", a.WsEndPoint)
 		return nil
