@@ -51,7 +51,8 @@ func checkResult(wsReq WSReqData, wsRsps []*Msg) (res bool, err error) {
 			for i, _ := range wsRsps {
 				info, _ := wsRsps[i].Info.(RspData)
 				//fmt.Println("<<",info)
-				if info.Event == req.Op && info.Arg["channel"] == i_req["channel"] && info.Arg["instType"] == i_req["instType"] {
+				if info.Event == req.Op && info.Arg["channel"] == i_req["channel"] && info.Arg["instId"] == i_req["instId"] {
+					//					if info.Event == req.Op && info.Arg["channel"] == i_req["channel"] && info.Arg["instType"] == i_req["instType"] {
 					ok = true
 					continue
 				}
